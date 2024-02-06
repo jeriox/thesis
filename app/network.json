@@ -1,0 +1,52 @@
+{
+  "name": "yaramo-sample",
+  "description": "Sample network with chaincode in dev setup",
+  "version": "0.1",
+  "client": {
+    "organization": "SampleOrg",
+    "credentialStore": {
+      "path": "/tmp/hfc-kvs"
+    }
+  },
+  "orderers": {
+    "orderer.example.com": {
+      "url": "localhost:7050"
+    }
+  },
+  "peers": {
+    "peer0.org1.example.com": {
+      "url": "localhost:7051"
+    }
+  },
+  "organizations": {
+    "org1.example.com": {
+      "mspid": "SampleOrg",
+      "peers": [
+        "peer0.org1.example.com"
+      ],
+      "orderers": [
+        "orderer.example.com"
+      ],
+      "users": {
+        "Admin": {
+          "cert": "/home/julian/fabric/fabric/sampleconfig/msp/signcerts/peer.pem",
+          "private_key": "/home/julian/fabric/fabric/sampleconfig/msp/keystore/key.pem"
+        }
+      }
+    }
+  },
+  "certificateAuthorities": {
+    "ca-org1": {
+      "url": "https://localhost:7054",
+      "grpcOptions": {
+        "verify": true
+      },
+      "registrar": [
+        {
+          "enrollId": "admin",
+          "enrollSecret": "adminpw"
+        }
+      ]
+    }
+  }
+}
