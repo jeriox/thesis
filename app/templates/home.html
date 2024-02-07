@@ -1,14 +1,43 @@
 <!doctype html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="static/pico/pico.min.css">
     <title>Distributed Topology Storage</title>
-  </head>
-  <body>
-    <main class="container">
-      <h1>Distributed Topology Storage</h1>
-    </main>
-  </body>
+</head>
+<body>
+<main class="container">
+    <h1>Distributed Topology Storage</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <div id="error" aria-invalid="true">
+                <ul>
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endif %}
+    {% endwith %}
+    <article>
+        <header>Recently updated topologies</header>
+        <ul>
+            {% for id in topology_list %}
+            <li><a href="/topology/{{ id }}/">{{ id }}</a></li>
+            {% endfor %}
+        </ul>
+    </article>
+    <article>
+        <header>Create new topology from ORM</header>
+        <form action="/topology/" method="post">
+            <label for="id_orm">ID</label>
+            <input type="text" id="id_orm" name="id_orm" placeholder="ID (name) of the topology" required>
+            <label for="polygon">Polygon</label>
+            <input type="text" id="polygon" name="polygon" placeholder="Coordinates of polygon limiting the topology" required>
+            <button type="submit">Submit</button>
+        </form>
+    </article>
+</main>
+</body>
 </html>
