@@ -15,7 +15,10 @@
             JSON representation
             <textarea readonly>{{ topology }}</textarea>
         </label>
-        <footer><a href="#" role="button">Download JSON representation</a> <a href="#" role="button">Download as PlanPro</a></footer>
+        <footer>
+            <a href="/topology/{{ id }}/json/" role="button" download="topology_{{ id }}.json">Download JSON representation</a>
+            <a href="/topology/{{ id }}/planpro/" role="button" download="topology_{{ id }}.ppxml">Download as PlanPro</a>
+        </footer>
     </article>
 </main>
 </body>

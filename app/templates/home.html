@@ -38,6 +38,16 @@
             <button type="submit">Submit</button>
         </form>
     </article>
+    <article>
+        <header>Create new topology from PlanPro</header>
+        <form action="/topology/" method="post" enctype=multipart/form-data>
+            <label for="id_planpro">ID</label>
+            <input type="text" id="id_planpro" name="id_planpro" placeholder="ID (name) of the topology" required>
+            <label for="planpro_file">PlanPro file</label>
+            <input type="file" id="planpro_file" name="planpro_file" required>
+            <button type="submit">Submit</button>
+        </form>
+    </article>
 </main>
 </body>
 </html>

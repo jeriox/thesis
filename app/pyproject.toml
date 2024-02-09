@@ -11,6 +11,9 @@ yaramo = {git = "https://github.com/simulate-digital-rail/yaramo"}
 fabric-sdk-py = {path = "../../fabric-sdk-py"}
 orm-importer = {git = "https://github.com/simulate-digital-rail/orm-importer", rev = "update-numpy"}
 flask = "^3.0.2"
+planpro-importer = {git = "https://github.com/simulate-digital-rail/planpro-importer"}
+planpro-exporter = {git = "https://github.com/simulate-digital-rail/planpro-exporter"}
+simplejson = "^3.19.2"
 
 
 [build-system]
