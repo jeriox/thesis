@@ -67,7 +67,7 @@ def create_topology():
         topology = PlanProReader(filename).read_topology_from_plan_pro_file().to_json()
         if error := _invoke_chaincode("CreateTopology", [request.form["id_planpro"], topology]):
             raise Exception(error)
-        sleep(1000)
+        sleep(10)
         return redirect(f"/topology/{request.form["id_planpro"]}/")
     except Exception as e:
         flash(f"Error creating topology: {e}")
