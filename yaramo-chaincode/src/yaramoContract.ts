@@ -2,6 +2,7 @@ import {Context, Contract, Info, Returns, Transaction} from 'fabric-contract-api
 import stringify from "json-stringify-deterministic";
 import sortKeysRecursive from 'sort-keys-recursive';
 import {Options, PythonShell} from "python-shell";
+import Long from "long";
 
 @Info({title: 'YaramoContract', description: 'Smart contract for managing yaramo instances'})
 export class YaramoContract extends Contract {
@@ -74,21 +75,36 @@ export class YaramoContract extends Contract {
     }
 
     @Transaction()
-    public async UpdateAsset(ctx: Context, id: string, edges: string, nodes: string, objects: string, routes: string, signals: string, vacancy_sections: string): Promise<void> {
+    public async UpdateTopology(ctx: Context, id: string, topology_json: string): Promise<void> {
         const exists = await this.TopologyExists(ctx, id);
         if (!exists) {
             throw new Error(`The topology ${id} does not exist`);
         }
 
-        const updatedTopology = {
-            edges: edges,
-            nodes: nodes,
-            routes: routes,
-            signals: signals,
-            vacancy_sections: vacancy_sections,
-        };
+        if (!await this.IsValidTopology(ctx, topology_json)) {
+            throw new Error("The given topology is not valid!");
+        }
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-        return ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(updatedTopology))));
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(JSON.parse(topology_json)))));
+    }
+
+    @Transaction(false)
+    public async GetHistory(ctx: Context, id: string): Promise<Array<[Long, string, string]>> {
+        const exists = await this.TopologyExists(ctx, id);
+        if (!exists) {
+            throw new Error(`The topology ${id} does not exist`);
+        }
+
+        var item_history = await ctx.stub.getHistoryForKey(id);
+        const allResults: Array<[Long, string, string]> = [];
+        while (true) {
+            const res = await item_history.next();
+            if (res.done) {
+                await item_history.close();
+                return allResults;
+            }
+            allResults.push([res.value.timestamp.seconds, res.value.txId, res.value.value.toString()]);
+        }
     }
 
     @Transaction(false)
