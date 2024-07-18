@@ -15,6 +15,13 @@
             JSON representation
             <textarea readonly>{{ topology }}</textarea>
         </label>
+        <h3>Version history</h3>
+        {% for entry in history %}
+            <label>
+                {{ entry.0 }} by {{ entry.1 }}
+                <textarea readonly>{{ entry.2 }}</textarea>
+            </label>
+        {% endfor %}
         <footer>
             <a href="/topology/{{ id }}/json/" role="button" download="topology_{{ id }}.json">Download JSON representation</a>
             <a href="/topology/{{ id }}/planpro/" role="button" download="topology_{{ id }}.ppxml">Download as PlanPro</a>

@@ -1,5 +1,7 @@
 import json
 import os
+from cryptography import x509
+from datetime import datetime
 from time import sleep
 
 from flask import flash, Flask, render_template, request, redirect
@@ -33,7 +35,13 @@ def home(error=None):
 @app.get("/topology/<id>/")
 def read_topology(id):
     topology = _query_chaincode("ReadTopology", [id])
-    return render_template("topology.html", id=id, topology=topology)
+    history = []
+    for version in json.loads(_query_chaincode("GetHistory", [id])):
+        dt = datetime.fromtimestamp(version[0])
+        transaction = _query_transaction(version[1])
+        cert = x509.load_pem_x509_certificate(transaction["transaction_envelope"]["payload"]["data"]["actions"][0]["header"]["creator"]["id_bytes"].encode())
+        history.append((dt, cert.subject.rfc4514_string(), version[2]))
+    return render_template("topology.html", id=id, topology=topology, history=history)
 
 
 @app.get("/topology/<id>/json/")
@@ -54,10 +62,15 @@ def download_topology_planpro(id):
 def create_topology():
     try:
         if "id_orm" in request.form:
+            id = request.form["id_orm"]
             topology = ORMImporter().run(request.form["polygon"]).to_json()
-            if error := _invoke_chaincode("CreateTopology", [request.form["id_orm"], topology]):
-                raise Exception(error)
-            sleep(1000)
+            if _query_chaincode("TopologyExists", [id]):
+                if error := _invoke_chaincode("UpdateTopology", [id, topology]):
+                    raise Exception(error)
+                sleep(5)
+            else:
+                if error := _invoke_chaincode("CreateTopology", [id, topology]):
+                    raise Exception(error)
             return redirect(f"/topology/{request.form["id_orm"]}/")
         file = request.files.get("planpro_file", None)
         if not (file and file.filename):
@@ -65,9 +78,14 @@ def create_topology():
         filename = os.path.join(app.config['UPLOAD_FOLDER'], secure_filename(file.filename))
         file.save(filename)
         topology = PlanProReader(filename).read_topology_from_plan_pro_file().to_json()
-        if error := _invoke_chaincode("CreateTopology", [request.form["id_planpro"], topology]):
-            raise Exception(error)
-        sleep(10)
+        id = request.form["id_orm"]
+        if _query_chaincode("TopologyExists", [id]):
+            if error := _invoke_chaincode("UpdateTopology", [id, topology]):
+                raise Exception(error)
+            sleep(5)
+        else:
+            if error := _invoke_chaincode("CreateTopology", [request.form["id_planpro"], topology]):
+                raise Exception(error)
         return redirect(f"/topology/{request.form["id_planpro"]}/")
     except Exception as e:
         flash(f"Error creating topology: {e}")
@@ -97,4 +115,13 @@ def _invoke_chaincode(func, args):
         fcn=func,
         args=args,
         cc_name='yaramo'
+    ))
+
+
+def _query_transaction(tx_id: str):
+    return loop.run_until_complete(cli.query_transaction(
+        requestor=org1_admin,
+        channel_name="ch1",
+        peers=['peer0.org1.example.com'],
+        tx_id=tx_id
     ))
