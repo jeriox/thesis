@@ -7,8 +7,9 @@ readme = "README.md"
 packages = [{include = "yaramo_chaincode"}]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.11"
 yaramo = {git = "https://github.com/simulate-digital-rail/yaramo"}
+railml-exporter = {git = "https://github.com/simulate-digital-rail/railml-exporter"}
 
 
 [build-system]

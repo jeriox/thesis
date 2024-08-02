@@ -1,3 +1,5 @@
 .idea/
 dist/
 node_modules/
+data/
+railml2b.jar
