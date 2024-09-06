@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/pico/pico.min.css">
+    <title>Distributed Topology Storage</title>
+</head>
+<body>
+<main class="container">
+    <h1>Distributed Topology Storage</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <article id="error" aria-invalid="true">
+                <header>Error</header>
+                <ul>
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </article>
+        {% endif %}
+    {% endwith %}
+    <article>
+        <header>Select topology to open</header>
+        <ul>
+            {% for id in topology_list %}
+                <li><a href="/api-client-callback?selected_documents_url={{ 'http://localhost:5000/api/documents/%s/versions'|format(id)|urlencode }}">{{ id }}</a></li>
+            {% endfor %}
+        </ul>
+    </article>
+</main>
+</body>
+</html>

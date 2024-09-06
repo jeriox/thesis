@@ -11,13 +11,14 @@
     <h1>Distributed Topology Storage</h1>
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div id="error" aria-invalid="true">
+            <article id="error" aria-invalid="true">
+                <header>Error</header>
                 <ul>
                     {% for message in messages %}
                     <li>{{ message }}</li>
                     {% endfor %}
                 </ul>
-            </div>
+            </article>
         {% endif %}
     {% endwith %}
     <article>
@@ -47,6 +48,25 @@
             <input type="file" id="planpro_file" name="planpro_file" required>
             <button type="submit">Submit</button>
         </form>
+    </article>
+    <article>
+        <header>API demonstration</header>
+        <p>
+            Here you can find a small demo client for the documents API. By clicking the button below, you initiate
+            a document selection. This would normally be initiated by a planning tool looking to open a topology.
+            After selecting a toplogy on the next page, you would be redirected to the calling application.
+        </p>
+        <button onclick='
+            fetch(
+                "/api/select-documents", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({"callback" : {"url": "http://localhost:5000/api-client-callback", "expires_in": 3600}})
+                }
+            ).then(response => response.json()).then(data => window.location.href = data.select_documents_url);
+        '>Select Documents</button>
     </article>
 </main>
 </body>
