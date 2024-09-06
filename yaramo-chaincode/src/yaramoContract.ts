@@ -4,21 +4,39 @@ import sortKeysRecursive from 'sort-keys-recursive';
 import {Options, PythonShell} from "python-shell";
 import Long from "long";
 
+const ClientIdentity = require('fabric-shim').ClientIdentity;
+
 @Info({title: 'YaramoContract', description: 'Smart contract for managing yaramo instances'})
 export class YaramoContract extends Contract {
+    private ContainsApprovedState(topology) {
+        for (const state in topology.status_information) {
+            if (Number(state) > 2) {
+                return true
+            }
+        }
+        return false
+    }
+
     @Transaction()
     public async CreateTopology(ctx: Context, id: string, topology_json: string): Promise<void> {
         const exists = await this.TopologyExists(ctx, id);
+        const topology = JSON.parse(topology_json)
         if (exists) {
             throw new Error(`The topology ${id} already exists`);
         }
+
+        if (topology.current_status > 2 || this.ContainsApprovedState(topology)) {
+            throw new Error(`The topology may not be created in an approved state!`);
+        }
+
+        let cid = new ClientIdentity(ctx.stub);
 
         if (!await this.IsValidTopology(ctx, topology_json)) {
             throw new Error("The given topology is not valid!");
         }
 
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(JSON.parse(topology_json)))));
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(topology))));
     }
 
     @Transaction(false)
@@ -77,15 +95,46 @@ export class YaramoContract extends Contract {
     @Transaction()
     public async UpdateTopology(ctx: Context, id: string, topology_json: string): Promise<void> {
         const exists = await this.TopologyExists(ctx, id);
+        const topology = JSON.parse(topology_json);
         if (!exists) {
             throw new Error(`The topology ${id} does not exist`);
+        }
+
+        if (topology.current_status > 2 || this.ContainsApprovedState(topology)) {
+            throw new Error(`The topology may not be created in an approved state!`);
         }
 
         if (!await this.IsValidTopology(ctx, topology_json)) {
             throw new Error("The given topology is not valid!");
         }
+
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
-        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(JSON.parse(topology_json)))));
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(topology))));
+    }
+
+    @Transaction()
+    public async ApproveTopology(ctx: Context, id: string): Promise<void> {
+        const topology = JSON.parse(await this.ReadTopology(ctx, id));
+
+        const current_state = topology.current_status
+        if (current_state > 2 || this.ContainsApprovedState(topology)) {
+            throw new Error(`The topology ${id} is not in a state in which it could be approved`);
+        }
+
+        let cid = new ClientIdentity(ctx.stub);
+        if (!cid.assertAttributeValue("planpruefer", "true")) {
+            throw new Error(`Only users with the planpruefer attribute may approve topologies!`);
+        }
+
+        topology["current_status"] = 3
+        topology.status_information[3] = {
+            "name": cid.getID(),
+            "organization": cid.getMSPID(),
+            "date": new Date().toISOString().slice(0, 10)
+        }
+
+        // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(topology))));
     }
 
     @Transaction(false)

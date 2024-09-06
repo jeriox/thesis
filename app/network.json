@@ -3,7 +3,7 @@
   "description": "Sample network with chaincode in dev setup",
   "version": "0.1",
   "client": {
-    "organization": "SampleOrg",
+    "organization": "sampleorg",
     "credentialStore": {
       "path": "/tmp/hfc-kvs"
     }
@@ -20,7 +20,7 @@
   },
   "organizations": {
     "org1.example.com": {
-      "mspid": "SampleOrg",
+      "mspid": "sampleorg",
       "peers": [
         "peer0.org1.example.com"
       ],
@@ -28,9 +28,9 @@
         "orderer.example.com"
       ],
       "users": {
-        "Admin": {
-          "cert": "/home/julian/fabric/fabric/sampleconfig/msp/signcerts/peer.pem",
-          "private_key": "/home/julian/fabric/fabric/sampleconfig/msp/keystore/key.pem"
+        "user1": {
+          "cert": "/home/julian/fabric-ca/clients/user1/msp/signcerts/cert.pem",
+          "private_key": "/home/julian/fabric-ca/clients/user1/msp/keystore/f4a0f8078a5158d27f784d0cd50147a687bc088d9d750ebdbdde7ee225912f82_sk"
         }
       }
     }

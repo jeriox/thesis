@@ -9,12 +9,33 @@
 <body>
 <main class="container">
     <h1>Distributed Topology Storage</h1>
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <article id="error" aria-invalid="true">
+                <header>Error</header>
+                <ul>
+                    {% for message in messages %}
+                    <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            </article>
+        {% endif %}
+    {% endwith %}
     <article>
         <header>Topology {{ id }} </header>
+        <h6>Current state</h6>
+        <p>
+            {{ topology.current_status }} by {{ current_state_dict.name }} ({{ current_state_dict.organization }}) on {{ current_state_dict.date }}
+        </p>
         <label>
             JSON representation
-            <textarea readonly>{{ topology }}</textarea>
+            <textarea readonly>{{ topology_json }}</textarea>
         </label>
+        {% if topology.current_status.value < 3 %}
+            <form method="post" action="approve">
+                    <input type="submit" class="outline contrast" value="Approve topology" width="auto">
+                </form>
+        {% endif %}
         <h3>Version history</h3>
         {% for entry in history %}
             <label>
